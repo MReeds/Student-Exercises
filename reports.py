@@ -151,7 +151,46 @@ class StudentExerciseReports():
             instructor_cohorts = db_cursor.fetchall()
             
             [print(i) for i in instructor_cohorts]
+    
+    def students_exercises(self):
+
+
+        with sqlite3.connect(self.db_path) as conn:
+            db_cursor = conn.cursor()
+
+            exercises = dict()
+
+            db_cursor.execute("""
+                SELECT
+                    e.Id ExerciseId,
+                    e.Name,
+                    s.Id,
+                    s.FirstName,
+                    s.LastName
+                FROM Exercise e
+                JOIN StudentExercises se ON se.ExerciseId = e.Id
+                JOIN Student s ON s.Id = se.StudentId
+            """)
+
+            dataset = db_cursor.fetchall()
             
+            for row in dataset:
+                exercise_id = row[0]
+                exercise_name = row[1]
+                student_id = row[2]
+                student_name = f'{row[3]} {row[4]}'
+                
+                if exercise_name not in exercises:
+                    exercises[exercise_name] = [student_name]
+                else:
+                    exercises[exercise_name].append(student_name)
+                    
+
+            for exercise_name, students in exercises.items():
+                print(exercise_name)
+                for student in students:
+                    print(f'\t* {student}')
+                    
 reports = StudentExerciseReports()
 # reports.all_students()
 # reports.all_cohorts()
@@ -160,6 +199,7 @@ reports = StudentExerciseReports()
 # reports.all_sql_exercises()
 # reports.students_and_cohorts()
 # reports.instructors_and_cohorts()
+reports.students_exercises()
 
 
 # Display all cohorts.
